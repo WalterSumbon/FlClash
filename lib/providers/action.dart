@@ -593,8 +593,13 @@ class SystemAction extends _$SystemAction {
     }
   }
 
-  Future<void> handleBackOrExit() async {
-    if (ref.read(backBlockProvider)) return;
+  Future<void> _handleBackOrExit({required bool ignoreBackBlock}) async {
+    if (!shouldHandleBackOrExit(
+      backBlock: ref.read(backBlockProvider),
+      ignoreBackBlock: ignoreBackBlock,
+    )) {
+      return;
+    }
     if (ref.read(appSettingProvider).minimizeOnExit) {
       if (system.isDesktop) {
         await preferences.saveConfig(ref.read(configProvider));
@@ -603,6 +608,14 @@ class SystemAction extends _$SystemAction {
     } else {
       await handleExit();
     }
+  }
+
+  Future<void> handleBackOrExit() async {
+    await _handleBackOrExit(ignoreBackBlock: false);
+  }
+
+  Future<void> handleWindowClose() async {
+    await _handleBackOrExit(ignoreBackBlock: true);
   }
 
   Future<void> updateVisible() async {
@@ -648,6 +661,13 @@ class SystemAction extends _$SystemAction {
     await Future.delayed(commonDuration);
     ref.read(localIpProvider.notifier).value = await utils.getLocalIpAddress();
   }
+}
+
+bool shouldHandleBackOrExit({
+  required bool backBlock,
+  required bool ignoreBackBlock,
+}) {
+  return ignoreBackBlock || !backBlock;
 }
 
 @Riverpod(keepAlive: true)

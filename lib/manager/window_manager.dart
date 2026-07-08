@@ -44,7 +44,7 @@ class _WindowContainerState extends ConsumerState<WindowManager>
 
   @override
   void onWindowClose() async {
-    await ref.read(systemActionProvider.notifier).handleBackOrExit();
+    await ref.read(systemActionProvider.notifier).handleWindowClose();
     super.onWindowClose();
   }
 

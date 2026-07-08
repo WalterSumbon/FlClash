@@ -6,6 +6,7 @@ import 'package:fl_clash/common/constant.dart';
 import 'package:fl_clash/common/request.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
+import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/providers/state.dart';
@@ -181,6 +182,22 @@ void main() {
     test('can update', () {
       container.read(backBlockProvider.notifier).update((_) => true);
       expect(container.read(backBlockProvider), true);
+    });
+  });
+
+  group('shouldHandleBackOrExit', () {
+    test('blocks regular back handling while a nested UI owns back', () {
+      expect(
+        shouldHandleBackOrExit(backBlock: true, ignoreBackBlock: false),
+        false,
+      );
+    });
+
+    test('allows window close even while a nested UI owns back', () {
+      expect(
+        shouldHandleBackOrExit(backBlock: true, ignoreBackBlock: true),
+        true,
+      );
     });
   });
 
