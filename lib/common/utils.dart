@@ -89,15 +89,20 @@ class Utils {
     if (timeStamp == null) {
       return '00:00:00';
     }
-    final diff = timeStamp / 1000;
-    final inHours = (diff / 3600).floor();
-    if (inHours > 99) {
-      return '99:59:59';
-    }
-    final inMinutes = (diff / 60 % 60).floor();
-    final inSeconds = (diff % 60).floor();
+    final totalSeconds = timeStamp ~/ Duration.millisecondsPerSecond;
+    final inDays = totalSeconds ~/ Duration.secondsPerDay;
+    final inHours =
+        (totalSeconds ~/ Duration.secondsPerHour) % Duration.hoursPerDay;
+    final inMinutes =
+        (totalSeconds ~/ Duration.secondsPerMinute) % Duration.minutesPerHour;
+    final inSeconds = totalSeconds % Duration.secondsPerMinute;
 
-    return '${getDateStringLast2(inHours)}:${getDateStringLast2(inMinutes)}:${getDateStringLast2(inSeconds)}';
+    final timeText =
+        '${getDateStringLast2(inHours)}:${getDateStringLast2(inMinutes)}:${getDateStringLast2(inSeconds)}';
+    if (inDays == 0) {
+      return timeText;
+    }
+    return '${inDays}d $timeText';
   }
 
   Locale? getLocaleForString(String? localString) {

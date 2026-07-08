@@ -58,8 +58,23 @@ void main() {
       expect(utils.getTimeText(3661000), '01:01:01');
     });
 
-    test('caps at 99:59:59', () {
-      expect(utils.getTimeText(100 * 3600 * 1000), '99:59:59');
+    test('formats last second before one day without day part', () {
+      const milliseconds = (Duration.secondsPerDay - 1) * 1000;
+      expect(utils.getTimeText(milliseconds), '23:59:59');
+    });
+
+    test('formats one day with day part', () {
+      expect(utils.getTimeText(Duration.millisecondsPerDay), '1d 00:00:00');
+    });
+
+    test('formats multiple days with remaining time', () {
+      const duration = Duration(days: 2, hours: 12, minutes: 23, seconds: 45);
+      expect(utils.getTimeText(duration.inMilliseconds), '2d 12:23:45');
+    });
+
+    test('does not cap hours at 99:59:59', () {
+      const duration = Duration(hours: 100);
+      expect(utils.getTimeText(duration.inMilliseconds), '4d 04:00:00');
     });
   });
 
