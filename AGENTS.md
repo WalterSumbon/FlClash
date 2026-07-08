@@ -187,6 +187,13 @@ The dashboard traffic usage widget intentionally shows upload/download totals as
 display or a visible dashboard network-speed widget, and total traffic is sampled only for a visible dashboard traffic
 usage widget.
 
+### Fork Release Naming
+
+For WalterSumbon fork releases, keep the app version and Git tag parseable as plain numeric SemVer so in-app update
+checks continue to work. Use `pubspec.yaml` versions like `0.8.94+2026070801` and tags like `v0.8.94`. Put fork identity
+in the GitHub release title and notes instead, for example `FlClash 0.8.94 (WalterSumbon fork)`. Do not use tag suffixes
+such as `v0.8.94-walter.1` unless the update-version parser is changed first.
+
 ### Build System
 
 `setup.dart` (project root) is the release build orchestrator:
