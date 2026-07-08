@@ -15,6 +15,7 @@ import 'window.dart';
 
 class Tray {
   static Tray? _instance;
+  String? _trayTitle;
 
   Tray._internal();
 
@@ -28,6 +29,7 @@ class Tray {
   }
 
   Future<void> destroy() async {
+    _trayTitle = null;
     await trayManager.destroy();
   }
 
@@ -197,7 +199,10 @@ class Tray {
         tunEnable: trayState.tunEnable,
       );
     }
-    updateTrayTitle(showTrayTitle: trayState.showTrayTitle, traffic: traffic);
+    await updateTrayTitle(
+      showTrayTitle: trayState.showTrayTitle,
+      traffic: traffic,
+    );
   }
 
   Future<void> updateTrayTitle({
@@ -207,11 +212,12 @@ class Tray {
     if (!system.isMacOS) {
       return;
     }
-    if (!showTrayTitle) {
-      await trayManager.setTitle('');
-    } else {
-      await trayManager.setTitle(traffic.trayTitle);
+    final title = showTrayTitle ? traffic.trayTitle : '';
+    if (_trayTitle == title) {
+      return;
     }
+    await trayManager.setTitle(title);
+    _trayTitle = title;
   }
 
   Future<void> _copyEnv(int port) async {

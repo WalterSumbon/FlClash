@@ -7,6 +7,8 @@ import 'package:fl_clash/common/request.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/app.dart';
+import 'package:fl_clash/providers/config.dart';
+import 'package:fl_clash/providers/state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/riverpod.dart';
@@ -213,6 +215,98 @@ void main() {
       final t = container.read(totalTrafficProvider);
       expect(t.up, 0);
       expect(t.down, 0);
+    });
+  });
+
+  group('TrayTitleState provider', () {
+    test('follows latest traffic when tray title is enabled', () {
+      container
+          .read(appSettingProvider.notifier)
+          .update((state) => state.copyWith(showTrayTitle: true));
+
+      container
+          .read(trafficsProvider.notifier)
+          .addTraffic(const Traffic(up: 1024, down: 2048));
+
+      final state = container.read(trayTitleStateProvider);
+      expect(state.showTrayTitle, true);
+      expect(state.traffic.up, 1024);
+      expect(state.traffic.down, 2048);
+    });
+
+    test('ignores traffic updates when tray title is disabled', () {
+      container
+          .read(appSettingProvider.notifier)
+          .update((state) => state.copyWith(showTrayTitle: false));
+      final changes = <TrayTitleState>[];
+      final subscription = container.listen<TrayTitleState>(
+        trayTitleStateProvider,
+        (_, next) => changes.add(next),
+        fireImmediately: false,
+      );
+      addTearDown(subscription.close);
+
+      final initialState = container.read(trayTitleStateProvider);
+      expect(initialState.showTrayTitle, false);
+      expect(initialState.traffic, const Traffic());
+
+      container
+          .read(trafficsProvider.notifier)
+          .addTraffic(const Traffic(up: 1024, down: 2048));
+      container
+          .read(trafficsProvider.notifier)
+          .addTraffic(const Traffic(up: 2048, down: 4096));
+
+      expect(changes, isEmpty);
+      expect(container.read(trayTitleStateProvider).traffic, const Traffic());
+    });
+
+    test('emits empty traffic once when tray title is disabled', () {
+      container
+          .read(appSettingProvider.notifier)
+          .update((state) => state.copyWith(showTrayTitle: true));
+      container
+          .read(trafficsProvider.notifier)
+          .addTraffic(const Traffic(up: 1024, down: 2048));
+      expect(container.read(trayTitleStateProvider).traffic.up, 1024);
+
+      final changes = <TrayTitleState>[];
+      final subscription = container.listen<TrayTitleState>(
+        trayTitleStateProvider,
+        (_, next) => changes.add(next),
+        fireImmediately: false,
+      );
+      addTearDown(subscription.close);
+
+      container
+          .read(appSettingProvider.notifier)
+          .update((state) => state.copyWith(showTrayTitle: false));
+
+      final disabledState = container.read(trayTitleStateProvider);
+      expect(changes, hasLength(1));
+      expect(changes.single, disabledState);
+      expect(disabledState.showTrayTitle, false);
+      expect(disabledState.traffic, const Traffic());
+    });
+
+    test('resubscribes to traffic after tray title is re-enabled', () {
+      container
+          .read(appSettingProvider.notifier)
+          .update((state) => state.copyWith(showTrayTitle: false));
+      container
+          .read(trafficsProvider.notifier)
+          .addTraffic(const Traffic(up: 1024, down: 2048));
+
+      expect(container.read(trayTitleStateProvider).traffic, const Traffic());
+
+      container
+          .read(appSettingProvider.notifier)
+          .update((state) => state.copyWith(showTrayTitle: true));
+
+      final state = container.read(trayTitleStateProvider);
+      expect(state.showTrayTitle, true);
+      expect(state.traffic.up, 1024);
+      expect(state.traffic.down, 2048);
     });
   });
 

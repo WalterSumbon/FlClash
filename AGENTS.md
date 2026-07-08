@@ -31,7 +31,7 @@ bash plugins/setup/buildkit/run_build_tool.sh android
 ### Flutter Development
 
 ```bash
-# Project is pinned with FVM (.fvmrc currently uses Flutter 3.35.7)
+# Project is pinned with FVM (.fvmrc currently uses Flutter 3.44.5; pubspec.lock requires Flutter >=3.38.4)
 fvm flutter pub get
 fvm flutter run
 fvm flutter test
@@ -171,6 +171,13 @@ Business logic lives in Riverpod notifier classes in `lib/providers/action.dart`
 Desktop: `WindowManager`, `TrayManager`, `HotKeyManager`, `ProxyManager`
 Mobile: `AndroidManager`, `TileManager`, `VpnManager`
 Shared: `ConnectivityManager`, `CoreManager`, `AppStateManager`, `StatusManager`, `ThemeManager`
+
+### macOS Tray Performance Note
+
+When macOS tray traffic title display is disabled (`AppSettingProps.showTrayTitle == false`),
+`trayTitleStateProvider` must not watch `trafficsProvider`; otherwise the once-per-second traffic sampler can still
+notify `TrayManager` and repeatedly call `trayManager.setTitle('')`, which triggers expensive `NSStatusItem` redraws.
+`Tray.updateTrayTitle()` also caches the last applied title and skips duplicate `setTitle` calls.
 
 ### Build System
 
