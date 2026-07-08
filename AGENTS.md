@@ -193,6 +193,9 @@ For WalterSumbon fork releases, keep the app version and Git tag parseable as pl
 checks continue to work. Use `pubspec.yaml` versions like `0.8.94+2026070801` and tags like `v0.8.94`. Put fork identity
 in the GitHub release title and notes instead, for example `FlClash 0.8.94 (WalterSumbon fork)`. Do not use tag suffixes
 such as `v0.8.94-walter.1` unless the update-version parser is changed first.
+Official fork release artifacts must be packaged with `--env stable`, for example
+`dart setup.dart macos --targets dmg --env stable`; the default setup env is `pre`, which compiles `APP_ENV=pre` and shows
+the top-right `PRE` banner through `AppEnvManager`.
 
 ### Build System
 
