@@ -96,6 +96,14 @@ class SystemBrightness extends _$SystemBrightness
 }
 
 @Riverpod(keepAlive: true)
+class WindowVisible extends _$WindowVisible with AutoDisposeNotifierMixin {
+  @override
+  bool build() {
+    return true;
+  }
+}
+
+@Riverpod(keepAlive: true)
 class Traffics extends _$Traffics with AutoDisposeNotifierMixin {
   @override
   FixedList<Traffic> build() {

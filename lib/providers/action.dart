@@ -55,13 +55,33 @@ class CommonAction extends _$CommonAction {
   }
 
   Future<void> updateTraffic() async {
-    final onlyStatisticsProxy = ref.read(
-      appSettingProvider.select((state) => state.onlyStatisticsProxy),
+    final appSetting = ref.read(appSettingProvider);
+    final windowVisible = ref.read(windowVisibleProvider);
+    final pageLabel = ref.read(currentPageLabelProvider);
+    final shouldUpdateRealtimeTraffic = shouldUpdateTrafficHistory(
+      supportsTrayTitle: system.isMacOS,
+      showTrayTitle: appSetting.showTrayTitle,
+      windowVisible: windowVisible,
+      pageLabel: pageLabel,
+      dashboardWidgets: appSetting.dashboardWidgets,
     );
-    final traffic = await coreController.getTraffic(onlyStatisticsProxy);
-    ref.read(trafficsProvider.notifier).addTraffic(traffic);
-    ref.read(totalTrafficProvider.notifier).value = await coreController
-        .getTotalTraffic(onlyStatisticsProxy);
+    final shouldUpdateTotalTrafficValue = shouldUpdateTotalTraffic(
+      windowVisible: windowVisible,
+      pageLabel: pageLabel,
+      dashboardWidgets: appSetting.dashboardWidgets,
+    );
+    if (!shouldUpdateRealtimeTraffic && !shouldUpdateTotalTrafficValue) {
+      return;
+    }
+    final onlyStatisticsProxy = appSetting.onlyStatisticsProxy;
+    if (shouldUpdateRealtimeTraffic) {
+      final traffic = await coreController.getTraffic(onlyStatisticsProxy);
+      ref.read(trafficsProvider.notifier).addTraffic(traffic);
+    }
+    if (shouldUpdateTotalTrafficValue) {
+      ref.read(totalTrafficProvider.notifier).value = await coreController
+          .getTotalTraffic(onlyStatisticsProxy);
+    }
   }
 
   Future<void> autoCheckUpdate() async {
@@ -604,6 +624,7 @@ class SystemAction extends _$SystemAction {
       if (system.isDesktop) {
         await preferences.saveConfig(ref.read(configProvider));
       }
+      ref.read(windowVisibleProvider.notifier).value = false;
       await system.back();
     } else {
       await handleExit();
@@ -621,9 +642,11 @@ class SystemAction extends _$SystemAction {
   Future<void> updateVisible() async {
     final visible = await window?.isVisible;
     if (visible != null && !visible) {
-      window?.show();
+      ref.read(windowVisibleProvider.notifier).value = true;
+      await window?.show();
     } else {
-      window?.hide();
+      ref.read(windowVisibleProvider.notifier).value = false;
+      await window?.hide();
     }
   }
 
@@ -668,6 +691,29 @@ bool shouldHandleBackOrExit({
   required bool ignoreBackBlock,
 }) {
   return ignoreBackBlock || !backBlock;
+}
+
+bool shouldUpdateTrafficHistory({
+  required bool supportsTrayTitle,
+  required bool showTrayTitle,
+  required bool windowVisible,
+  required PageLabel pageLabel,
+  required List<DashboardWidget> dashboardWidgets,
+}) {
+  return (supportsTrayTitle && showTrayTitle) ||
+      (windowVisible &&
+          pageLabel == PageLabel.dashboard &&
+          dashboardWidgets.contains(DashboardWidget.networkSpeed));
+}
+
+bool shouldUpdateTotalTraffic({
+  required bool windowVisible,
+  required PageLabel pageLabel,
+  required List<DashboardWidget> dashboardWidgets,
+}) {
+  return windowVisible &&
+      pageLabel == PageLabel.dashboard &&
+      dashboardWidgets.contains(DashboardWidget.trafficUsage);
 }
 
 @Riverpod(keepAlive: true)

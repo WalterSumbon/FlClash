@@ -81,6 +81,7 @@ class Tray {
     final showMenuItem = MenuItem(
       label: appLocalizations.show,
       onClick: (_) {
+        ref.read(windowVisibleProvider.notifier).value = true;
         window?.show();
       },
     );

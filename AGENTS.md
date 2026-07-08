@@ -179,6 +179,14 @@ When macOS tray traffic title display is disabled (`AppSettingProps.showTrayTitl
 notify `TrayManager` and repeatedly call `trayManager.setTitle('')`, which triggers expensive `NSStatusItem` redraws.
 `Tray.updateTrayTitle()` also caches the last applied title and skips duplicate `setTitle` calls.
 
+### Dashboard Traffic Performance Note
+
+The dashboard traffic usage widget intentionally shows upload/download totals as text only; do not reintroduce
+`DonutChart` there without a measured reason, because per-second total traffic updates repeatedly animate and repaint it.
+`CommonAction.updateTraffic()` gates core traffic queries by demand: realtime traffic is sampled only for macOS tray title
+display or a visible dashboard network-speed widget, and total traffic is sampled only for a visible dashboard traffic
+usage widget.
+
 ### Build System
 
 `setup.dart` (project root) is the release build orchestrator:
@@ -211,7 +219,7 @@ in the project root.
 
 Architecture detection is automatic (host arch via `uname -m` on Unix, `PROCESSOR_ARCHITECTURE` on Windows). The
 `--description` flag passed to flutter_distributor adds arch suffix to artifact names (e.g.,
-`FlClash-0.8.93-macos-arm64.dmg`).
+`FlClash-0.8.94-macos-arm64.dmg`).
 
 ### Local Plugins (`plugins/`)
 

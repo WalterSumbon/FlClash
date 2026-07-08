@@ -322,6 +322,58 @@ abstract class _$SystemBrightness extends $Notifier<Brightness> {
   }
 }
 
+@ProviderFor(WindowVisible)
+final windowVisibleProvider = WindowVisibleProvider._();
+
+final class WindowVisibleProvider
+    extends $NotifierProvider<WindowVisible, bool> {
+  WindowVisibleProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'windowVisibleProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$windowVisibleHash();
+
+  @$internal
+  @override
+  WindowVisible create() => WindowVisible();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$windowVisibleHash() => r'667c3afb8ed643dccaea103dcf57ed7413bd885a';
+
+abstract class _$WindowVisible extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}
+
 @ProviderFor(Traffics)
 final trafficsProvider = TrafficsProvider._();
 
@@ -1791,7 +1843,7 @@ final class NetworkDetectionProvider
   }
 }
 
-String _$networkDetectionHash() => r'e2892c87c76992bec307699de7d838152aa272d5';
+String _$networkDetectionHash() => r'1cab20d67ec54321b4dbba9d971cd80e98542e23';
 
 abstract class _$NetworkDetection extends $Notifier<NetworkDetectionState> {
   NetworkDetectionState build();

@@ -201,6 +201,79 @@ void main() {
     });
   });
 
+  group('traffic sampling decisions', () {
+    test('updates realtime traffic when tray title is shown while hidden', () {
+      expect(
+        shouldUpdateTrafficHistory(
+          supportsTrayTitle: true,
+          showTrayTitle: true,
+          windowVisible: false,
+          pageLabel: PageLabel.proxies,
+          dashboardWidgets: const [],
+        ),
+        true,
+      );
+    });
+
+    test('ignores tray title setting on platforms without tray titles', () {
+      expect(
+        shouldUpdateTrafficHistory(
+          supportsTrayTitle: false,
+          showTrayTitle: true,
+          windowVisible: false,
+          pageLabel: PageLabel.proxies,
+          dashboardWidgets: const [],
+        ),
+        false,
+      );
+    });
+
+    test('updates realtime traffic for visible dashboard speed widget', () {
+      expect(
+        shouldUpdateTrafficHistory(
+          supportsTrayTitle: false,
+          showTrayTitle: false,
+          windowVisible: true,
+          pageLabel: PageLabel.dashboard,
+          dashboardWidgets: const [DashboardWidget.networkSpeed],
+        ),
+        true,
+      );
+    });
+
+    test('skips realtime traffic when hidden and tray title is disabled', () {
+      expect(
+        shouldUpdateTrafficHistory(
+          supportsTrayTitle: true,
+          showTrayTitle: false,
+          windowVisible: false,
+          pageLabel: PageLabel.dashboard,
+          dashboardWidgets: const [DashboardWidget.networkSpeed],
+        ),
+        false,
+      );
+    });
+
+    test('updates total traffic only for visible dashboard usage widget', () {
+      expect(
+        shouldUpdateTotalTraffic(
+          windowVisible: true,
+          pageLabel: PageLabel.dashboard,
+          dashboardWidgets: const [DashboardWidget.trafficUsage],
+        ),
+        true,
+      );
+      expect(
+        shouldUpdateTotalTraffic(
+          windowVisible: false,
+          pageLabel: PageLabel.dashboard,
+          dashboardWidgets: const [DashboardWidget.trafficUsage],
+        ),
+        false,
+      );
+    });
+  });
+
   group('Version provider', () {
     test('default is 0', () {
       expect(container.read(versionProvider), 0);
