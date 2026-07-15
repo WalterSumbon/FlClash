@@ -5,6 +5,18 @@ import 'package:fl_clash/state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+@visibleForTesting
+String getStartButtonText({
+  required bool suspend,
+  required String suspendedText,
+  required int? runTime,
+}) {
+  if (suspend) {
+    return suspendedText;
+  }
+  return utils.getTimeText(runTime);
+}
+
 class StartButton extends ConsumerStatefulWidget {
   const StartButton({super.key});
 
@@ -77,35 +89,30 @@ class _StartButtonState extends ConsumerState<StartButton>
     final suspend = ref.watch(suspendProvider);
     final theme = Theme.of(context);
     final appLocalizations = context.appLocalizations;
+    final runTime = ref.watch(runTimeProvider);
+    final buttonText = getStartButtonText(
+      suspend: suspend,
+      suspendedText: appLocalizations.suspended,
+      runTime: runTime,
+    );
+    final buttonTextStyle = suspend
+        ? context.textTheme.titleMedium
+        : context.textTheme.titleMedium?.toSoftBold;
     return RepaintBoundary(
       child: Theme(
         data: theme.copyWith(
           floatingActionButtonTheme: theme.floatingActionButtonTheme.copyWith(
-            sizeConstraints: const BoxConstraints(minWidth: 56, maxWidth: 200),
+            sizeConstraints: const BoxConstraints(minWidth: 56, maxWidth: 260),
           ),
         ),
         child: AnimatedBuilder(
           animation: _controller!.view,
           builder: (_, child) {
-            final textWidth = suspend
-                ? globalState.measure
-                          .computeTextSize(
-                            Text(
-                              appLocalizations.suspended,
-                              style: context.textTheme.titleMedium,
-                            ),
-                          )
-                          .width +
-                      24
-                : globalState.measure
-                          .computeTextSize(
-                            Text(
-                              utils.getTimeDifference(DateTime.now()),
-                              style: context.textTheme.titleMedium?.toSoftBold,
-                            ),
-                          )
-                          .width +
-                      16;
+            final textWidth =
+                globalState.measure
+                    .computeTextSize(Text(buttonText, style: buttonTextStyle))
+                    .width +
+                (suspend ? 24 : 16);
             return FloatingActionButton(
               clipBehavior: Clip.antiAlias,
               materialTapTargetSize: MaterialTapTargetSize.padded,
@@ -133,30 +140,14 @@ class _StartButtonState extends ConsumerState<StartButton>
               ),
             );
           },
-          child: suspend
-              ? Text(
-                  appLocalizations.suspended,
-                  maxLines: 1,
-                  overflow: TextOverflow.visible,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: context.colorScheme.onPrimaryContainer,
-                  ),
-                )
-              : Consumer(
-                  builder: (_, ref, _) {
-                    final runTime = ref.watch(runTimeProvider);
-                    final text = utils.getTimeText(runTime);
-                    return Text(
-                      text,
-                      maxLines: 1,
-                      overflow: TextOverflow.visible,
-                      style: Theme.of(context).textTheme.titleMedium?.toSoftBold
-                          .copyWith(
-                            color: context.colorScheme.onPrimaryContainer,
-                          ),
-                    );
-                  },
-                ),
+          child: Text(
+            buttonText,
+            maxLines: 1,
+            overflow: TextOverflow.visible,
+            style: buttonTextStyle?.copyWith(
+              color: context.colorScheme.onPrimaryContainer,
+            ),
+          ),
         ),
       ),
     );
